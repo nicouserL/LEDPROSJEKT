@@ -6,38 +6,38 @@ constexpr uint8_t LED_DATA_PIN = 3;
 constexpr uint8_t BUTTON1_PIN = 5; // System on/off
 constexpr uint8_t BUTTON2_PIN = 4; // Long press changes LED color
 constexpr uint8_t NUM_LEDS = 5;
-constexpr unsigned long DEBOUNCE_MS = 50;
-constexpr unsigned long LONG_PRESS_MS = 2000;
+constexpr unsigned long DEBOUNCE_MS = 50; //How long debounce delay
+constexpr unsigned long LONG_PRESS_MS = 2000; //how long long press is befor changing color
 
 CRGB leds[NUM_LEDS];
 
-struct DebouncedButton {
+struct DebouncedButton { //makes a structure for debouncing
   uint8_t pin;
   int stableState;
   int lastRawState;
   unsigned long lastChangeTime;
 };
 
-DebouncedButton button1{BUTTON1_PIN, LOW, LOW, 0};
+DebouncedButton button1{BUTTON1_PIN, LOW, LOW, 0}; 
 DebouncedButton button2{BUTTON2_PIN, LOW, LOW, 0};
 
-bool systemOn = false;
-bool button2PressActive = false;
-bool button2LongPressHandled = false;
-bool useRed = false; // Default active color is green
-unsigned long button2PressStartTime = 0;
-int lastPirState = -1;
+bool systemOn = false; //system starts off
+bool button2PressActive = false; //button starts off
+bool button2LongPressHandled = false; //button is not always longpressed
+bool useRed = false; // Default color green
+unsigned long button2PressStartTime = 0; //start time for butot2
+int lastPirState = 0; //pirstate start
 
-bool updateButton(DebouncedButton &button) {
+bool updateButton(DebouncedButton &button) { //func for button updating the info for button
   int rawState = digitalRead(button.pin);
 
-  if (rawState != button.lastRawState) {
-    button.lastRawState = rawState;
-    button.lastChangeTime = millis();
+  if (rawState != button.lastRawState) { //on start raw is false, 
+    button.lastRawState = rawState; //button rawstate changes to new state
+    button.lastChangeTime = millis(); //starts timer for when the button was changed
   }
 
-  if (millis() - button.lastChangeTime >= DEBOUNCE_MS &&
-      rawState != button.stableState) {
+  if (millis() - button.lastChangeTime >= DEBOUNCE_MS && //checks the time from when the button was press to now
+      rawState != button.stableState) { 
     button.stableState = rawState;
     return button.stableState == HIGH; // true only on a debounced press
   }
@@ -47,7 +47,7 @@ bool updateButton(DebouncedButton &button) {
 
 void setup() {
   pinMode(PIR_PIN, INPUT);
-  // The buttons are wired to 5V with external 10 kOhm pull-down resistors.
+  
   pinMode(BUTTON1_PIN, INPUT);
   pinMode(BUTTON2_PIN, INPUT);
 
@@ -63,7 +63,7 @@ void setup() {
 void loop() {
   if (updateButton(button1)) {
     systemOn = !systemOn;
-    lastPirState = -1; // Report the PIR state again when the system is enabled.
+    lastPirState = 0; 
     Serial.println(systemOn ? "System ON" : "System OFF");
   }
 
